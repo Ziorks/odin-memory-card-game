@@ -1,0 +1,12 @@
+.scoreboard {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 2rem;
+  gap: 1rem;
+  width: max-content;
+  margin: 0 auto;
+  padding: 1rem;
+  border-radius: 20px;
+  background-color: rgba(110, 73, 25, 0.219);
+  color: var(--primary-color);
+}

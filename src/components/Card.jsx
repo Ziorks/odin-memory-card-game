@@ -22,8 +22,7 @@ function Card({ image }) {
     <button
       className="card"
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
+      onMouseLeave={handleMouseLeave}>
       <img className="cardImage" src={image} alt="" />
     </button>
   );

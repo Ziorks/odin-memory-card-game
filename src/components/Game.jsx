@@ -37,12 +37,16 @@ function Game() {
         setImages(newImages);
         setScore(Math.random() > 0.05 ? score + 1 : 0);
         highScore.current = Math.max(highScore.current, score + 1);
-      }}
-    >
+      }}>
       <Scoreboard currentScore={score} highScore={highScore.current} />
-      {images.map((image) => (
-        <Card image={image} />
-      ))}
+      <div className="cardsContainer">
+        {images.map((image) => (
+          <>
+            <Card image={image} />
+            <Card image={image} />
+          </>
+        ))}
+      </div>
     </main>
   );
 }

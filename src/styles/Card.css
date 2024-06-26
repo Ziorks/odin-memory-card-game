@@ -6,10 +6,11 @@
 
 .card > .cardImage {
   width: 200px;
+  filter: drop-shadow(black 0 0 5px);
   transition: transform 350ms ease-out;
 }
 
 .card:hover > .cardImage {
-  filter: drop-shadow(black 0 0 10px);
+  filter: drop-shadow(white 0 0 10px);
   transition: transform 50ms ease-out;
 }

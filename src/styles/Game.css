@@ -1,3 +1,12 @@
 .game {
-  margin: 6rem 0;
+  margin: 6rem auto;
+  max-width: 1200px;
+  font-family: "Belwe Medium";
+}
+
+.game > .cardsContainer {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
