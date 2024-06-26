@@ -1,0 +1,15 @@
+.card {
+  cursor: pointer;
+  border: unset;
+  background-color: unset;
+}
+
+.card > .cardImage {
+  width: 200px;
+  transition: transform 350ms ease-out;
+}
+
+.card:hover > .cardImage {
+  filter: drop-shadow(black 0 0 10px);
+  transition: transform 50ms ease-out;
+}
