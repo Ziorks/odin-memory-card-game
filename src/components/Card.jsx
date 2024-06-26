@@ -1,7 +1,6 @@
 import "../styles/Card.css";
-import image from "../images/ragnaros.png";
 
-function Card() {
+function Card({ image }) {
   const handleMouseMove = (e) => {
     const image = e.currentTarget.querySelector(".cardImage");
     const { top, left, width, height } =
