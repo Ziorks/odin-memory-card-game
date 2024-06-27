@@ -22,8 +22,9 @@ const shuffleArray = (array) => {
   }
 };
 
-const generateCardData = () => {
-  const data = [
+const generateCardData = (nCards) => {
+  //replace this with api call
+  const testData = [
     {
       id: 0,
       clicked: false,
@@ -49,26 +50,50 @@ const generateCardData = () => {
       description: "Chillwind Yeti",
     },
   ];
-  shuffleArray(data);
-  return data;
+
+  const result = [];
+  for (let i = 0; i < nCards; i++) {
+    result.push(testData[Math.floor(Math.random() * testData.length)]);
+  }
+  shuffleArray(result);
+  return result;
 };
 
 function Game() {
-  const [cardData, setCardData] = useState(generateCardData());
+  const [round, setRound] = useState(1);
+  const [cardData, setCardData] = useState(generateCardData(4));
   const highScore = useRef(0);
-  const score = cardData.filter(({ clicked }) => clicked).length;
+
+  const prevRound = round - 1;
+  const prevRoundsScore = prevRound * 2 + (prevRound / 2) * (2 + prevRound * 2);
+  const currentRoundScore = cardData.filter(({ clicked }) => clicked).length;
+  const score = prevRoundsScore + currentRoundScore;
   highScore.current = Math.max(highScore.current, score);
 
   const handleClick = (id) => {
     const clickedCardIndex = cardData.findIndex((card) => card.id === id);
+
+    //if clicked a card that has already been clicked
     if (cardData[clickedCardIndex].clicked) {
-      setCardData(generateCardData());
-    } else {
-      const newCardData = cardData.map((card) => ({ ...card }));
-      newCardData[clickedCardIndex].clicked = true;
-      shuffleArray(newCardData);
-      setCardData(newCardData);
+      setRound(1);
+      setCardData(generateCardData(4));
+      return;
     }
+
+    //if clicked last unclicked card of round
+    if (currentRoundScore + 1 === cardData.length) {
+      const nextRound = round + 1;
+      const nNewCards = 2 + nextRound * 2;
+      setRound(nextRound);
+      setCardData(generateCardData(nNewCards));
+      return;
+    }
+
+    //if clicked unclicked card and there are still unclicked cards
+    const newCardData = cardData.map((card) => ({ ...card }));
+    newCardData[clickedCardIndex].clicked = true;
+    shuffleArray(newCardData);
+    setCardData(newCardData);
   };
 
   return (
