@@ -1,6 +1,6 @@
 import "../styles/Card.css";
 
-function Card({ image }) {
+function Card({ image, onClick }) {
   const handleMouseMove = (e) => {
     const image = e.currentTarget.querySelector(".cardImage");
     const { top, left, width, height } =
@@ -22,7 +22,8 @@ function Card({ image }) {
     <button
       className="card"
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}>
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}>
       <img className="cardImage" src={image} alt="" />
     </button>
   );

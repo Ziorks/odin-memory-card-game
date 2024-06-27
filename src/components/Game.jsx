@@ -8,7 +8,6 @@ import image3 from "../images/youthfulBrewmaster.png";
 import image4 from "../images/chillwindYeti.png";
 import { useRef, useState } from "react";
 
-const testImages = [image1, image2, image3, image4];
 const shuffleArray = (array) => {
   let currentIndex = array.length;
 
@@ -23,28 +22,41 @@ const shuffleArray = (array) => {
   }
 };
 
+const generateCardData = () => {
+  const data = [
+    { id: 0, clicked: false, image: image1 },
+    { id: 1, clicked: false, image: image2 },
+    { id: 2, clicked: false, image: image3 },
+    { id: 3, clicked: false, image: image4 },
+  ];
+  shuffleArray(data);
+  return data;
+};
+
 function Game() {
-  const [score, setScore] = useState(0);
-  const [images, setImages] = useState(testImages);
-  const highScore = useRef(score);
+  const [cardData, setCardData] = useState(generateCardData());
+  const score = cardData.filter(({ clicked }) => clicked).length;
+  const highScore = useRef(0);
+  highScore.current = Math.max(highScore.current, score);
+
+  const handleClick = (id) => {
+    const clickedCardIndex = cardData.findIndex((card) => card.id === id);
+    if (cardData[clickedCardIndex].clicked) {
+      setCardData(generateCardData());
+    } else {
+      const newCardData = [...cardData];
+      newCardData[clickedCardIndex].clicked = true;
+      shuffleArray(newCardData);
+      setCardData(newCardData);
+    }
+  };
 
   return (
-    <main
-      className="game"
-      onClick={() => {
-        const newImages = [...images];
-        shuffleArray(newImages);
-        setImages(newImages);
-        setScore(Math.random() > 0.05 ? score + 1 : 0);
-        highScore.current = Math.max(highScore.current, score + 1);
-      }}>
+    <main className="game">
       <Scoreboard currentScore={score} highScore={highScore.current} />
       <div className="cardsContainer">
-        {images.map((image) => (
-          <>
-            <Card image={image} />
-            <Card image={image} />
-          </>
+        {cardData.map(({ id, image }) => (
+          <Card key={id} image={image} onClick={() => handleClick(id)} />
         ))}
       </div>
     </main>
