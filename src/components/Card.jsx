@@ -1,6 +1,6 @@
 import "../styles/Card.css";
 
-function Card({ image, onClick }) {
+function Card({ image, description, onClick }) {
   const handleMouseMove = (e) => {
     const image = e.currentTarget.querySelector(".cardImage");
     const { top, left, width, height } =
@@ -8,8 +8,8 @@ function Card({ image, onClick }) {
     const centerX = left + width / 2;
     const centerY = top + height / 2;
 
-    const rotateY = ((centerX - e.clientX) / (width / 2)) * 10;
-    const rotateX = ((e.clientY - centerY) / (height / 2)) * 20;
+    const rotateY = ((centerX - e.clientX) / (width / 2)) * 7;
+    const rotateX = ((e.clientY - centerY) / (height / 2)) * 5;
     image.style.transform = `perspective(500px) translateZ(50px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
   };
 
@@ -23,8 +23,12 @@ function Card({ image, onClick }) {
       className="card"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onClick={onClick}>
-      <img className="cardImage" src={image} alt="" />
+      onClick={(e) => {
+        onClick(e);
+        handleMouseLeave(e);
+      }}
+    >
+      <img className="cardImage" src={image} alt={description} />
     </button>
   );
 }

@@ -24,10 +24,30 @@ const shuffleArray = (array) => {
 
 const generateCardData = () => {
   const data = [
-    { id: 0, clicked: false, image: image1 },
-    { id: 1, clicked: false, image: image2 },
-    { id: 2, clicked: false, image: image3 },
-    { id: 3, clicked: false, image: image4 },
+    {
+      id: 0,
+      clicked: false,
+      image: image1,
+      description: "Ragnaros the Firelord",
+    },
+    {
+      id: 1,
+      clicked: false,
+      image: image2,
+      description: "Angry Chicken",
+    },
+    {
+      id: 2,
+      clicked: false,
+      image: image3,
+      description: "Youthful Brewmaster",
+    },
+    {
+      id: 3,
+      clicked: false,
+      image: image4,
+      description: "Chillwind Yeti",
+    },
   ];
   shuffleArray(data);
   return data;
@@ -35,8 +55,8 @@ const generateCardData = () => {
 
 function Game() {
   const [cardData, setCardData] = useState(generateCardData());
-  const score = cardData.filter(({ clicked }) => clicked).length;
   const highScore = useRef(0);
+  const score = cardData.filter(({ clicked }) => clicked).length;
   highScore.current = Math.max(highScore.current, score);
 
   const handleClick = (id) => {
@@ -44,7 +64,7 @@ function Game() {
     if (cardData[clickedCardIndex].clicked) {
       setCardData(generateCardData());
     } else {
-      const newCardData = [...cardData];
+      const newCardData = cardData.map((card) => ({ ...card }));
       newCardData[clickedCardIndex].clicked = true;
       shuffleArray(newCardData);
       setCardData(newCardData);
@@ -55,8 +75,13 @@ function Game() {
     <main className="game">
       <Scoreboard currentScore={score} highScore={highScore.current} />
       <div className="cardsContainer">
-        {cardData.map(({ id, image }) => (
-          <Card key={id} image={image} onClick={() => handleClick(id)} />
+        {cardData.map(({ id, image, description }) => (
+          <Card
+            key={id}
+            image={image}
+            description={description}
+            onClick={() => handleClick(id)}
+          />
         ))}
       </div>
     </main>
