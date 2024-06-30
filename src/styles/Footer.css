@@ -1,6 +1,6 @@
 .footer {
   width: 100vw;
-  height: 5rem;
+  height: 3rem;
   position: fixed;
   bottom: 0;
   display: flex;
@@ -10,5 +10,4 @@
   font-size: 0.8rem;
   background-color: var(--primary-color);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-  padding: 0.5rem;
 }
