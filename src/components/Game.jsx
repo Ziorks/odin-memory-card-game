@@ -144,8 +144,8 @@ function Game() {
 
       if (!ignore) {
         setCardData(cards);
-        setIsGameOver(false);
         setIsLoading(false);
+        setIsGameOver(false);
       }
     };
 
@@ -161,6 +161,8 @@ function Game() {
 
     //if clicked a card that has already been clicked
     if (cardData[clickedCardIndex].clicked) {
+      setRound(1);
+      setCardData([]);
       setIsGameOver(true);
       return;
     }
