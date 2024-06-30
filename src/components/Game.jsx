@@ -58,7 +58,8 @@ function shuffleArray(array) {
 function Game() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  const [round, setRound] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(true);
+  const [round, setRound] = useState(1);
   const [cardData, setCardData] = useState([]);
   const highScore = useRef(0);
   const cardPool = useRef(null);
@@ -96,7 +97,7 @@ function Game() {
         if (!ignore) {
           const filtered = data.filter((card) => card.cardId.startsWith("EX1"));
           cardPool.current = filtered;
-          setRound(1);
+          setIsGameOver(false);
         }
       } catch (error) {
         console.log(error);
@@ -113,53 +114,54 @@ function Game() {
   useEffect(() => {
     let ignore = false;
 
-    if (round > 0) {
-      const fetchCards = async () => {
-        setIsLoading(true);
-        const nCards = round > 0 ? 2 + round * 2 : 0;
-        const cards = [];
-        const usedIds = new Set();
+    const fetchCards = async () => {
+      setIsLoading(true);
+      const nCards = round > 0 ? 2 + round * 2 : 0;
+      const cards = [];
+      const usedIds = new Set();
 
-        while (cards.length < nCards) {
-          const promises = [];
-          while (promises.length < nCards - cards.length) {
-            const randomCardIndex = Math.floor(
-              Math.random() * cardPool.current.length
-            );
-            const randomCardId = cardPool.current[randomCardIndex].cardId;
-            if (!usedIds.has(randomCardId)) {
-              usedIds.add(randomCardId);
-              promises.push(fetchCardData(randomCardId));
-            }
-          }
-          try {
-            const fetchedCards = await Promise.all(promises);
-            fetchedCards
-              .filter((card) => card.image)
-              .forEach((card) => cards.push(card));
-          } catch (error) {
-            console.log(error);
+      while (cards.length < nCards) {
+        const promises = [];
+        while (promises.length < nCards - cards.length) {
+          const randomCardIndex = Math.floor(
+            Math.random() * cardPool.current.length
+          );
+          const randomCardId = cardPool.current[randomCardIndex].cardId;
+          if (!usedIds.has(randomCardId)) {
+            usedIds.add(randomCardId);
+            promises.push(fetchCardData(randomCardId));
           }
         }
-
-        if (!ignore) {
-          setCardData(cards);
-          setIsLoading(false);
+        try {
+          const fetchedCards = await Promise.all(promises);
+          fetchedCards
+            .filter((card) => card.image)
+            .forEach((card) => cards.push(card));
+        } catch (error) {
+          console.log(error);
         }
-      };
+      }
 
+      if (!ignore) {
+        setCardData(cards);
+        setIsGameOver(false);
+        setIsLoading(false);
+      }
+    };
+
+    if (cardPool.current) {
       fetchCards();
     }
 
     return () => (ignore = true);
-  }, [round]);
+  }, [round, isGameOver]);
 
   const handleClick = (id) => {
     const clickedCardIndex = cardData.findIndex((card) => card.id === id);
 
     //if clicked a card that has already been clicked
     if (cardData[clickedCardIndex].clicked) {
-      setRound(1);
+      setIsGameOver(true);
       return;
     }
 
@@ -178,14 +180,18 @@ function Game() {
   };
 
   if (isError) {
-    return <main className="game">There was an error.</main>;
+    return (
+      <main className="game">
+        <p className="message">There was an error.</p>
+      </main>
+    );
   }
 
   return (
     <main className="game">
       <Scoreboard currentScore={score} highScore={highScore.current} />
       {isLoading ? (
-        <p>Loading...</p>
+        <p className="message">Loading...</p>
       ) : (
         <div className="cardsContainer">
           {cardData.map(({ id, image, description }) => (

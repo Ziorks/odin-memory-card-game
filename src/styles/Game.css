@@ -10,3 +10,10 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.game > .message {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 3rem;
+  color: var(--primary-color);
+}
