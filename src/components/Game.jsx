@@ -31,16 +31,27 @@ async function fetchCardData(id) {
 }
 
 function shuffleArray(array) {
-  let currentIndex = array.length;
+  if (array.length <= 1) {
+    return;
+  }
 
-  while (currentIndex != 0) {
-    let randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
+  const originalArray = [...array];
+  let hasChanged = false;
 
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
+  while (!hasChanged) {
+    let currentIndex = array.length;
+    while (currentIndex != 0) {
+      let randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex],
+        array[currentIndex],
+      ];
+    }
+    hasChanged = !originalArray.every(
+      (element, index) => element === array[index]
+    );
   }
 }
 
