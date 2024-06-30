@@ -96,7 +96,7 @@ function Game() {
         if (!ignore) {
           const filtered = data.filter((card) => card.cardId.startsWith("EX1"));
           cardPool.current = filtered;
-          setRound(1); //I don't think this is good
+          setRound(1);
         }
       } catch (error) {
         console.log(error);
@@ -115,6 +115,7 @@ function Game() {
 
     if (round > 0) {
       const fetchCards = async () => {
+        setIsLoading(true);
         const nCards = round > 0 ? 2 + round * 2 : 0;
         const cards = [];
         const usedIds = new Set();
@@ -159,7 +160,6 @@ function Game() {
     //if clicked a card that has already been clicked
     if (cardData[clickedCardIndex].clicked) {
       setRound(1);
-      setIsLoading(true);
       return;
     }
 
@@ -167,7 +167,6 @@ function Game() {
     if (currentRoundScore + 1 === cardData.length) {
       setRound(round + 1);
       setCardData([]);
-      setIsLoading(true);
       return;
     }
 
@@ -178,31 +177,27 @@ function Game() {
     setCardData(newCardData);
   };
 
-  if (isLoading) {
-    return <main className="game">Loading...</main>;
-  }
-
   if (isError) {
     return <main className="game">There was an error.</main>;
   }
 
   return (
     <main className="game">
-      <Scoreboard
-        currentScore={score}
-        highScore={highScore.current}
-        round={round}
-      />
-      <div className="cardsContainer">
-        {cardData.map(({ id, image, description }) => (
-          <Card
-            key={id}
-            image={image}
-            description={description}
-            onClick={() => handleClick(id)}
-          />
-        ))}
-      </div>
+      <Scoreboard currentScore={score} highScore={highScore.current} />
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="cardsContainer">
+          {cardData.map(({ id, image, description }) => (
+            <Card
+              key={id}
+              image={image}
+              description={description}
+              onClick={() => handleClick(id)}
+            />
+          ))}
+        </div>
+      )}
     </main>
   );
 }
