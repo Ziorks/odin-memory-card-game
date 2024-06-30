@@ -3,9 +3,8 @@ import Scoreboard from "./Scoreboard";
 import "../styles/Game.css";
 import { useEffect, useRef, useState } from "react";
 
-async function getAllCards() {
-  const url =
-    "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/sets/classic";
+async function fetchCardData(id) {
+  const url = "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/" + id;
   const options = {
     method: "GET",
     headers: {
@@ -16,10 +15,18 @@ async function getAllCards() {
 
   try {
     const resp = await fetch(url, options);
+    if (!resp.ok) {
+      throw new Error("bad response");
+    }
     const data = await resp.json();
-    return data;
+    return {
+      id,
+      clicked: false,
+      image: data[0].img,
+      description: data[0].name,
+    };
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 }
 
@@ -38,7 +45,8 @@ function shuffleArray(array) {
 }
 
 function Game() {
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
   const [round, setRound] = useState(0);
   const [cardData, setCardData] = useState([]);
   const highScore = useRef(0);
@@ -54,32 +62,9 @@ function Game() {
   useEffect(() => {
     let ignore = false;
 
-    getAllCards().then((result) => {
-      if (!ignore) {
-        cardPool.current = result;
-        setRound(1);
-        console.log("Card Pool Received!");
-      }
-    });
-
-    return () => (ignore = true);
-  }, []);
-
-  useEffect(() => {
-    const promises = [];
-    const nCards = round > 0 ? 2 + round * 2 : 0;
-    const cardIds = new Set();
-
-    while (cardIds.size < nCards) {
-      const randomCardIndex = Math.floor(
-        Math.random() * cardPool.current.length
-      );
-      const randomCardId = cardPool.current[randomCardIndex].cardId;
-      cardIds.add(randomCardId);
-    }
-
-    cardIds.forEach((id) => {
-      const url = "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/" + id;
+    const fetchAllCards = async () => {
+      const url =
+        "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/sets/classic";
       const options = {
         method: "GET",
         headers: {
@@ -89,30 +74,67 @@ function Game() {
         },
       };
 
-      const promise = new Promise((resolve, reject) => {
-        fetch(url, options)
-          .then((resp) => resp.json())
-          .then((data) => {
-            console.log(data);
-            const cardData = {
-              id,
-              clicked: false,
-              image: data[0].img,
-              description: data[0].name,
-            };
-            resolve(cardData);
-          })
-          .catch((error) => reject(error));
-      });
+      try {
+        const resp = await fetch(url, options);
+        if (!resp.ok) {
+          setIsLoading(false);
+          setIsError(true);
+          return;
+        }
+        const data = await resp.json();
+        if (!ignore) {
+          cardPool.current = data;
+          setRound(1); //I don't think this is good
+        }
+      } catch (error) {
+        console.log(error);
+        setIsError(true);
+      }
+      setIsLoading(false);
+    };
 
-      promises.push(promise);
-    });
+    fetchAllCards();
 
-    Promise.all(promises).then((cards) => {
-      console.log(cards);
-      setCardData(cards);
-      setLoading(false);
-    });
+    return () => (ignore = true);
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    if (round > 0) {
+      const fetchCards = async () => {
+        const nCards = round > 0 ? 2 + round * 2 : 0;
+        const cards = [];
+        const usedIds = new Set();
+
+        while (cards.length < nCards) {
+          const promises = [];
+          while (promises.length < nCards - cards.length) {
+            const randomCardIndex = Math.floor(
+              Math.random() * cardPool.current.length
+            );
+            const randomCardId = cardPool.current[randomCardIndex].cardId;
+            if (!usedIds.has(randomCardId)) {
+              usedIds.add(randomCardId);
+              promises.push(fetchCardData(randomCardId));
+            }
+          }
+          const fetchedCards = await Promise.all(promises);
+          fetchedCards
+            .filter((card) => card.image)
+            .forEach((card) => cards.push(card));
+        }
+
+        if (!ignore) {
+          setCardData(cards);
+          setIsLoading(false);
+        }
+      };
+
+      fetchCards();
+    }
+
+    return () => (ignore = true);
   }, [round]);
 
   const handleClick = (id) => {
@@ -121,7 +143,7 @@ function Game() {
     //if clicked a card that has already been clicked
     if (cardData[clickedCardIndex].clicked) {
       setRound(1);
-      setLoading(true);
+      setIsLoading(true);
       return;
     }
 
@@ -129,7 +151,7 @@ function Game() {
     if (currentRoundScore + 1 === cardData.length) {
       setRound(round + 1);
       setCardData([]);
-      setLoading(true);
+      setIsLoading(true);
       return;
     }
 
@@ -140,6 +162,14 @@ function Game() {
     setCardData(newCardData);
   };
 
+  if (isLoading) {
+    return <main className="game">Loading...</main>;
+  }
+
+  if (isError) {
+    return <main className="game">There was an error.</main>;
+  }
+
   return (
     <main className="game">
       <Scoreboard
@@ -147,20 +177,16 @@ function Game() {
         highScore={highScore.current}
         round={round}
       />
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="cardsContainer">
-          {cardData.map(({ id, image, description }) => (
-            <Card
-              key={id}
-              image={image}
-              description={description}
-              onClick={() => handleClick(id)}
-            />
-          ))}
-        </div>
-      )}
+      <div className="cardsContainer">
+        {cardData.map(({ id, image, description }) => (
+          <Card
+            key={id}
+            image={image}
+            description={description}
+            onClick={() => handleClick(id)}
+          />
+        ))}
+      </div>
     </main>
   );
 }
