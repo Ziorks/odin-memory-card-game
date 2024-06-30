@@ -22,11 +22,11 @@ async function fetchCardData(id) {
     return {
       id,
       clicked: false,
-      image: data[0].img,
+      image: Math.random() > 0.1 ? data[0].img : data[0].imgGold,
       description: data[0].name,
     };
   } catch (error) {
-    throw error;
+    console.log(error);
   }
 }
 
@@ -94,7 +94,8 @@ function Game() {
         }
         const data = await resp.json();
         if (!ignore) {
-          cardPool.current = data;
+          const filtered = data.filter((card) => card.cardId.startsWith("EX1"));
+          cardPool.current = filtered;
           setRound(1); //I don't think this is good
         }
       } catch (error) {
@@ -130,10 +131,14 @@ function Game() {
               promises.push(fetchCardData(randomCardId));
             }
           }
-          const fetchedCards = await Promise.all(promises);
-          fetchedCards
-            .filter((card) => card.image)
-            .forEach((card) => cards.push(card));
+          try {
+            const fetchedCards = await Promise.all(promises);
+            fetchedCards
+              .filter((card) => card.image)
+              .forEach((card) => cards.push(card));
+          } catch (error) {
+            console.log(error);
+          }
         }
 
         if (!ignore) {
